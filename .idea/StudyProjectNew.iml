@@ -10,9 +10,11 @@
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/cache" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/collections" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/common" />
+      <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/data-fixtures" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/dbal" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/doctrine-bundle" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/doctrine-cache-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/doctrine-fixtures-bundle" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/doctrine-migrations-bundle" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/event-manager" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/doctrine/inflector" />
@@ -34,6 +36,7 @@
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/nikic/php-parser" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/ocramius/package-versions" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/ocramius/proxy-manager" />
+      <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/phing/phing" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/phpdocumentor/reflection-common" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/phpdocumentor/reflection-docblock" />
       <excludeFolder url="file://$MODULE_DIR$/FrontServer/vendor/phpdocumentor/type-resolver" />

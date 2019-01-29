@@ -41,7 +41,7 @@ class Task
     protected $speed;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="datеtime")
      */
     protected $timeExecute;
 
