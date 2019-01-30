@@ -31,3 +31,8 @@ services:
         arguments: [~, App\Entity\User, ~]
         tags:
             - { name: sonata.admin, manager_type: orm, label: User }
+
+    get_set_method_normalizer:
+        class: Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer
+        public: false
+        tags: [serializer.normalizer]
