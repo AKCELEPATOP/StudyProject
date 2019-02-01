@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/api/post")
@@ -201,7 +202,7 @@ class PostController extends AbstractController
     }
 
     /**
-     * @Route("/setToProcess", name="set_to_process", methods={"PUT"})
+     * @Route("/setToProcess/{id}", name="set_to_process", methods={"PUT"})
      * @param $id
      * @return JsonResponse
      */

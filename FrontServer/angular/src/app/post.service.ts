@@ -35,8 +35,11 @@ export class PostService {
         )
   }
 
-  setToProcess(id: number): any{
-
+  setToProcess(id: number): Observable<any>{
+    return this.client.put(this.uriProcess + '/'+id, id)
+        .pipe(
+            catchError(this.handleError)
+        )
   }
 
   private handleError(error: HttpErrorResponse){

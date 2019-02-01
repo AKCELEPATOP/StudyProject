@@ -20,11 +20,9 @@
         <td>{{post.body}}</td>
         <td>{{post.status}}</td>
 
-        <!--<td>-->
-            <!--<span class="table-remove">-->
-                <!--<button type="button" class="btn btn-warning" (click)="">Remove</button>-->
-            <!--</span>-->
-        <!--</td>-->
+        <td>
+            <button type="button" class="btn btn-warning" (click)="executePost(post.id)" [disabled]="!post.status">Execute</button>
+        </td>
     </tr>
     </tbody>
 </table>

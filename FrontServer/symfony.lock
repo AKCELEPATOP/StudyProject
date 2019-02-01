@@ -200,6 +200,9 @@
     "phing/phing": {
         "version": "2.16.1"
     },
+    "php-amqplib/php-amqplib": {
+        "version": "v2.8.1"
+    },
     "phpdocumentor/reflection-common": {
         "version": "1.0.1"
     },

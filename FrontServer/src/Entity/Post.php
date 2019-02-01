@@ -13,6 +13,8 @@ class Post
 {
     const GROUP = "post_group";
 
+    const SEND = "send";
+
     const NEW = 0;
 
     const WAITING = 1;
@@ -27,7 +29,7 @@ class Post
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups(Post::GROUP)
+     * @Groups({Post::GROUP, Post:SEND})
      */
     private $id;
 

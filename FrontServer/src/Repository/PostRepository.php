@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Post;
+use App\Model\Post\ArrayOfPost;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
@@ -35,6 +36,21 @@ class PostRepository extends ServiceEntityRepository
     {
         $this->_em->remove($task);
         $this->_em->flush();
+    }
+
+    public function getReadyPosts() : array
+    {
+        $now = new \DateTime();
+
+        $qb = $this->createQueryBuilder("e");
+        $qb
+            ->addSelect("e.id")
+            ->andWhere("e.time_execute < :now")
+            ->setParameter('now', $now)
+            ->andWhere('e.status = :status')
+            ->setParameter('status', Post::WAITING);
+        $result = $qb->getQuery()->getResult();
+        return $result;
     }
 
     // /**

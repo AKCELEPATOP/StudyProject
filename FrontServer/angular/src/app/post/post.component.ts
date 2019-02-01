@@ -1,27 +1,34 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {PostService} from "../post.service";
 import Post from '../Post';
 
 @Component({
-  selector: 'app-post',
-  templateUrl: './post.component.html',
-  styleUrls: ['./post.component.css']
+    selector: 'app-post',
+    templateUrl: './post.component.html',
+    styleUrls: ['./post.component.css']
 })
 export class PostComponent implements OnInit {
 
-  public postList: Array<Post> = [];
-  errorMessage: string;
+    public postList: Array<Post> = [];
+    errorMessage: string;
 
-  constructor(private _postService: PostService) { }
+    constructor(private _postService: PostService) {
+    }
 
-  ngOnInit() {
-    this.getPosts();
-  }
+    ngOnInit() {
+        this.getPosts();
+    }
 
-  getPosts(){
-    this._postService.getPosts().subscribe(
-        posts => this.postList = posts, error => this.errorMessage = <any> error
-    );
-  }
+    getPosts() {
+        this._postService.getPosts().subscribe(
+            posts => this.postList = posts, error => this.errorMessage = <any>error
+        );
+    }
 
+    executePost(id: number) {
+        this._postService.setToProcess(id)
+            .subscribe(post => post, error => this.errorMessage = <any>error
+            );
+        this.getPosts();
+    }
 }
