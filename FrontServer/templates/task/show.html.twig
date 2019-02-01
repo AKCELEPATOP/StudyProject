@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Task{% endblock %}
+
+{% block body %}
+    <h1>Task</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ task.id }}</td>
+            </tr>
+            <tr>
+                <th>Method</th>
+                <td>{{ task.method }}</td>
+            </tr>
+            <tr>
+                <th>Url</th>
+                <td>{{ task.url }}</td>
+            </tr>
+            <tr>
+                <th>Speed</th>
+                <td>{{ task.speed }}</td>
+            </tr>
+            <tr>
+                <th>TimeExecute</th>
+                <td>{{ task.timeExecute }}</td>
+            </tr>
+            <tr>
+                <th>Body</th>
+                <td>{{ task.body }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('task_index') }}">back to list</a>
+
+    <a href="{{ path('task_edit', {'id': task.id}) }}">edit</a>
+
+    {{ include('task/_delete_form.html.twig') }}
+{% endblock %}

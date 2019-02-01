@@ -40,7 +40,7 @@ services:
         - .:/application
         - ./FrontServer/docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
       depends_on:
-        - rabbitmq
+#        - rabbitmq
         - mysql
       ports:
         - "8000:80"
@@ -59,21 +59,21 @@ services:
       ports:
         - "8004:80"
 
-    rabbitmq:
-      image: rabbitmq:3.7.5-management
-      # image: bitnami/rabbitmq:latest
-      working_dir: /application/FrontServer
-      # build:
-      #     context: ./Symfony
-      #     dockerfile: docker/rabbitMQ.docker
-      hostname: rabbit-mq
-      container_name: symfony4-rabbit-mq
-      volumes:
-        - .:/application
-      ports:
-        - '15672:15672'
-        - '5672:5672'
-      environment:
-        RABBITMQ_DEFAULT_USER: "rabbitmq"
-        RABBITMQ_DEFAULT_PASS: "rabbitmq"
-        RABBITMQ_DEFAULT_VHOST: "/"
+#    rabbitmq:
+#      image: rabbitmq:3.7.5-management
+#      # image: bitnami/rabbitmq:latest
+#      working_dir: /application/FrontServer
+#      # build:
+#      #     context: ./Symfony
+#      #     dockerfile: docker/rabbitMQ.docker
+#      hostname: rabbit-mq
+#      container_name: symfony4-rabbit-mq
+#      volumes:
+#        - .:/application
+#      ports:
+#        - '15672:15672'
+#        - '5672:5672'
+#      environment:
+#        RABBITMQ_DEFAULT_USER: "rabbitmq"
+#        RABBITMQ_DEFAULT_PASS: "rabbitmq"
+#        RABBITMQ_DEFAULT_VHOST: "/"

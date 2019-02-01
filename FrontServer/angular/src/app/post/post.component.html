@@ -1,0 +1,30 @@
+<h1>Posts</h1>
+
+<table class="table table-hover table-striped">
+    <thead>
+    <tr>
+        <th scope="col">Number</th>
+        <th scope="col">Method</th>
+        <th scope="col">Url</th>
+        <th scope="col">Time Execute</th>
+        <th scope="col">Body</th>
+        <th scope="col">Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let post of postList; let i = index">
+        <td>{{post.id}}</td>
+        <td>{{post.method}}</td>
+        <td>{{post.url}}</td>
+        <td>{{post.timeExecute}}</td>
+        <td>{{post.body}}</td>
+        <td>{{post.status}}</td>
+
+        <!--<td>-->
+            <!--<span class="table-remove">-->
+                <!--<button type="button" class="btn btn-warning" (click)="">Remove</button>-->
+            <!--</span>-->
+        <!--</td>-->
+    </tr>
+    </tbody>
+</table>

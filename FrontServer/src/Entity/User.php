@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use FOS\UserBundle\Model\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /** @ORM\Entity(repositoryClass="App\Repository\UserRepository")*/
 class User extends BaseUser
@@ -20,19 +21,26 @@ class User extends BaseUser
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
+     * @Groups(Post::GROUP)
      */
     protected $id;
 
     /**
-     * @ORM\OneToMany(targetEntity="Task", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="user")
      */
-    protected $tasks;
+    private $posts;
+
+    /** @Groups(Post::GROUP) */
+    protected $username;
 
 
     public function __construct()
     {
         parent::__construct();
         $this->tasks = new ArrayCollection();
+        $this->posts = new ArrayCollection();
+        //raw code☺
+        $this->roles = ['ROLE_USER'];
     }
 
     public function getId(): ?int
@@ -40,31 +48,32 @@ class User extends BaseUser
         return $this->id;
     }
 
+
     /**
-     * @return Collection|Task[]
+     * @return Collection|Post[]
      */
-    public function getTasks(): Collection
+    public function getPosts(): Collection
     {
-        return $this->tasks;
+        return $this->posts;
     }
 
-    public function addTask(Task $task): self
+    public function addPost(Post $post): self
     {
-        if (!$this->tasks->contains($task)) {
-            $this->tasks[] = $task;
-            $task->setUser($this);
+        if (!$this->posts->contains($post)) {
+            $this->posts[] = $post;
+            $post->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeTask(Task $task): self
+    public function removePost(Post $post): self
     {
-        if ($this->tasks->contains($task)) {
-            $this->tasks->removeElement($task);
+        if ($this->posts->contains($post)) {
+            $this->posts->removeElement($post);
             // set the owning side to null (unless already changed)
-            if ($task->getUser() === $this) {
-                $task->setUser(null);
+            if ($post->getUser() === $this) {
+                $post->setUser(null);
             }
         }
 

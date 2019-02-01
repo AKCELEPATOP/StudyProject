@@ -20,3 +20,6 @@ framework:
         engines: ['twig', 'php']
 
     translator: { fallbacks: ['%locale%'] }
+
+    serializer:
+        circular_reference_handler: App\Utils\CircularReferenceHandler
