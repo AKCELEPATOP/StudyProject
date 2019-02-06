@@ -1,0 +1,14 @@
+/application/BackServer/logs/*.log
+{
+    daily
+    missingok
+    rotate 50
+    size 5k
+    compress
+    notifempty
+    su root adm
+    sharedscripts
+    postrotate
+                [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`
+    endscript
+}

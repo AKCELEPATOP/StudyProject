@@ -9,11 +9,13 @@
 namespace App\Service;
 
 
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 
-class Validate
+final class Validate
 {
     private $validator;
     private $em;
@@ -21,10 +23,9 @@ class Validate
      * Validate constructor.
      * @param ValidatorInterface $validator
      */
-    public function __construct(ValidatorInterface $validator,Registry $registry)
+    public function __construct(ValidatorInterface $validator)
     {
         $this->validator=$validator;
-        $this->em=$registry;
     }
     public function validateRequest($data)
     {

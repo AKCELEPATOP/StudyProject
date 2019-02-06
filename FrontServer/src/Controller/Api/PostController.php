@@ -7,21 +7,26 @@ use App\Repository\UserRepository;
 use App\Service\TaskService;
 use App\Service\Validate;
 use Doctrine\ORM\EntityNotFoundException;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use FOS\RestBundle\Controller\Annotations as Rest;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * @Route("/api/post")
  * Class PostController
  * @package App\Controller\Api
  */
-class PostController extends AbstractController
+class PostController extends AbstractFOSRestController
 {
     /** @var TaskService */
     private $service;
@@ -35,63 +40,68 @@ class PostController extends AbstractController
     /** @var UserRepository */
     private $userRepository;
 
+    /** @var ValidatorInterface */
+    private $validate;
+
     public function __construct(TaskService $service, NormalizerInterface $normalizer,
                                 SerializerInterface $serializer,
-                                UserRepository $userRepository)
+                                UserRepository $userRepository,
+                                ValidatorInterface $validate)
     {
         $this->service = $service;
         $this->normalizer = $normalizer;
         $this->serializer = $serializer;
         $this->userRepository = $userRepository;
+        $this->validate = $validate;
     }
 
+//    /**
+//     * @Rest\Get("/api/post/{id}")
+//     * @param int $id
+//     * @return JsonResponse
+//     */
+//    public function show(int $id)
+//    {
+//        try {
+//            $task = $this->service->getTask($id);
+//        } catch (EntityNotFoundException $ex) {
+//            $response = array(
+//                'code' => 1,
+//                'message' => 'post not found',
+//                'error' => null,
+//                'result' => null
+//            );
+//            return new JsonResponse($response, Response::HTTP_NOT_FOUND);
+//        }
+//
+//        $data = $this->get('serializer')->serialize($task, 'json');
+//
+//        $response = array(
+//            'code' => 0,
+//            'message' => 'success',
+//            'errors' => null,
+//            'result' => json_decode($data)
+//        );
+//        return new JsonResponse($response, 200);
+//    }
+
     /**
-     * @Route("/{id}", name="post_show", methods={"GET"})
+     * @Rest\Post("/api/post")
      */
-    public function show(int $id)
-    {
-        try {
-            $task = $this->service->getTask($id);
-        } catch (EntityNotFoundException $ex) {
-            $response = array(
-                'code' => 1,
-                'message' => 'post not found',
-                'error' => null,
-                'result' => null
-            );
-            return new JsonResponse($response, Response::HTTP_NOT_FOUND);
-        }
-
-        $data = $this->get('serializer')->serialize($task, 'json');
-
-        $response = array(
-            'code' => 0,
-            'message' => 'success',
-            'errors' => null,
-            'result' => json_decode($data)
-        );
-        return new JsonResponse($response, 200);
-    }
-
-    /**
-     * @Route("/",name="post_new", methods={"POST"})
-     * @param Request $request
-     * @param Validate $validate
-     * @return JsonResponse
-     */
-    public function new(Request $request, Validate $validate)
+    public function new(Request $request)
     {
         $data = $request->getContent();
         $post = $this->get('serializer')->deserialize($data, 'App\Entity\Post', 'json');
 
-        $reponse = $validate->validateRequest($post);
-        if (!empty($reponse)) {
-            return new JsonResponse($reponse, Response::HTTP_BAD_REQUEST);
+        $errors = $this->validate->validate($post);
+        if (count($errors) > 0) {
+            return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
         }
 
         $userId = $this->getUserId();
 
         $post->setUser($this->userRepository->find($userId));
+        $post->setStatus(Post::STATUS_NEW);
 
         $this->service->addTask($post);
 
@@ -105,7 +115,7 @@ class PostController extends AbstractController
     }
 
     /**
-     * @Route("/", name="post_index", methods={"GET"})
+     * @Rest\Get("/api/post/")
      * @return JsonResponse
      */
     public function index()
@@ -122,29 +132,31 @@ class PostController extends AbstractController
             return new JsonResponse($response, Response::HTTP_NOT_FOUND);
         }
 
-        $data = $this->normalizer->normalize($posts, 'json', ['groups' => Post::GROUP]);
+//        $serializer = new Serializer([new DateTimeNormalizer(),$this->normalizer], array('json' => new JsonEncoder()));
+
+        $data = $this->serializer->serialize($posts, 'json', ['groups' => Post::GROUP_POST]);
         $response = array(
             'code' => 0,
             'message' => 'success',
             'errors' => null,
-            'result' => $data
+            'result' => json_decode($data)
         );
         return new JsonResponse($response, Response::HTTP_OK);
     }
 
     /**
-     * @Route("/{id}", name="update_post", methods={"PUT"})
+     * @Rest\Post("/api/post/{id}")
      * @param Request $request
      * @param $id
      * @param Validate $validate
      * @return JsonResponse
      */
-    public function edit(Request $request, $id, Validate $validate)
+    public function edit(Request $request, int $id)
     {
         $body = $request->getContent();
-        $data = $this->serializer->deserialize($body, 'App\Entity\Post', 'json', ['groups' => Post::GROUP]);
+        $data = $this->serializer->deserialize($body, 'App\Entity\Post', 'json', ['groups' => Post::GROUP_POST]);
 
-        $reponse = $validate->validateRequest($data);
+        $reponse = $this->validate->validate($data);
 
         if (!empty($reponse)) {
             return new JsonResponse($reponse, Response::HTTP_BAD_REQUEST);
@@ -165,7 +177,7 @@ class PostController extends AbstractController
     }
 
     /**
-     * $Route("/{id}, name="post_delete", methods={"DELETE"})
+     * @Rest\Delete("/api/post/{id}")
      * @param $id
      * @return JsonResponse
      */
@@ -187,48 +199,56 @@ class PostController extends AbstractController
     }
 
     /**
-     * @Route("/getUserPost", name="get_user_posts", methods={"GET"})
+     * @Rest\Get("/api/post/getUserPost/", name="get_user_posts")
      * @return JsonResponse
      */
     public function getUserPosts()
     {
-        $userId = $this->getUserId();
+//        $userId = $this->getUserId();
+        $userId = 1;
         try {
-            $result = $this->service->getUserTasks($userId);
-            return new JsonResponse($result, Response::HTTP_OK);
+            $result = $this->service->getUserTasks($this->userRepository->find($userId));
+            $result = $this->serializer->serialize($result, 'json', ['groups' => Post::GROUP_POST]);
+            $response = array(
+                'code' => 0,
+                'message' => null,
+                'errors' => null,
+                'result' => json_decode($result)
+            );
+            return new JsonResponse($response, Response::HTTP_OK);
         } catch (\Exception $ex) {
-            return new JsonResponse(null, Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse($ex->getMessage() . $ex->getTraceAsString(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * @Route("/setToProcess/{id}", name="set_to_process", methods={"PUT"})
+     * @Rest\Post("/api/post/setToProcess/{id}", name="set_to_process")
      * @param $id
      * @return JsonResponse
      */
     public function setToProcess($id)
     {
-        $userId = $this->getUserId();
-        try{
+        $userId = 1; //$this->getUserId();
+        try {
             $this->service->setToProcess($id, $userId);
             $response = array(
                 'code' => 0,
                 'message' => 'Post sent to process',
             );
             return new JsonResponse($response, Response::HTTP_OK);
-        }catch (UnauthorizedHttpException $ex){
+        } catch (UnauthorizedHttpException $ex) {
             $response = array(
                 'code' => 1,
                 'message' => $ex->getMessage(),
             );
             return new JsonResponse($response, Response::HTTP_UNAUTHORIZED);
-        }catch (\DomainException $ex){
+        } catch (\DomainException $ex) {
             $response = array(
                 'code' => 1,
                 'message' => $ex->getMessage(),
             );
             return new JsonResponse($response, Response::HTTP_METHOD_NOT_ALLOWED);
-        }catch (\Exception $ex){
+        } catch (\Exception $ex) {
             $response = array(
                 'code' => 1,
                 'message' => 'Something broken try again later',
@@ -240,7 +260,7 @@ class PostController extends AbstractController
     /**
      * @return int
      */
-    private function getUserId() : int
+    private function getUserId(): int
     {
         return $this->getUser()->getId();
     }

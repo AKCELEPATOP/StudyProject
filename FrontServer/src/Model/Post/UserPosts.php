@@ -8,25 +8,44 @@
 
 namespace App\Model\Post;
 
+
+use Symfony\Component\Serializer\Annotation\Groups;
+use App\Entity\Post;
+
 /**
  * Class UserPosts
  * @package App\Model\Post
  */
 class UserPosts
 {
-    /** @var ArrayOfPost  */
+    /**
+     * @var ArrayOfPost
+     * @Groups(Post::GROUP_POST)
+     */
     private $posts;
 
-    /** @var int  */
+    /**
+     * @var int
+     * @Groups(Post::GROUP_POST)
+     */
     private $userId;
 
-    /** @var int  */
+    /**
+     * @var int
+     * @Groups(Post::GROUP_POST)
+     */
     private $postsCount;
 
-    /** @var int  */
+    /**
+     * @var int
+     * @Groups(Post::GROUP_POST)
+     */
     private $requestsCount;
 
-    /** @var float  */
+    /**
+     * @Groups(Post::GROUP_POST)
+     * @var float
+     */
     private $averageSpeed;
 
     /**
@@ -125,8 +144,6 @@ class UserPosts
     {
         $this->averageSpeed = $averageSpeed;
     }
-
-
 
 
 }

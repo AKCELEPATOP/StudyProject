@@ -1,4 +1,15 @@
 FROM nginx:alpine
 
-RUN apk update\
- && apk add bash\
+# Remove sym links from nginx image
+# RUN rm /var/log/nginx/access.log
+# RUN rm /var/log/nginx/error.log
+
+# Install logrotate
+RUN apt-get update && apt-get -y install logrotate
+
+COPY ./BackServer/docker/logrotation/nginx /etc/logrotate.d/back.test
+
+RUN chmod 0644 /etc/logrotate.d/back.test
+
+# Start nginx and cron as a service
+CMD service cron start && nginx -g 'daemon off;'

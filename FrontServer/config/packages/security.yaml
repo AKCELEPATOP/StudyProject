@@ -34,9 +34,10 @@ security:
     - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: ^/admin/, role: ROLE_SUPER_ADMIN }
-    - { path: ^/api, roles: [IS_AUTHENTICATED_FULLY, ROLE_SUPER_ADMIN] }
-    - { path: ^/api, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER, ROLE_SUPER_ADMIN], methods: [POST] }
-    - { path: ^/api/post/getUserPost, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER, ROLE_SUPER_ADMIN] }
+#    - { path: ^/api, roles: [IS_AUTHENTICATED_FULLY, ROLE_SUPER_ADMIN] }
+#    - { path: ^/api, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER, ROLE_SUPER_ADMIN], methods: [POST] }
+#    - { path: ^/api/post, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER, ROLE_SUPER_ADMIN] }
+    - { path: ^/, roles: [IS_AUTHENTICATED_FULLY, ROLE_USER, ROLE_SUPER_ADMIN] }
   encoders:
     FOS\UserBundle\Model\UserInterface: bcrypt
     App\Entity\User: bcrypt

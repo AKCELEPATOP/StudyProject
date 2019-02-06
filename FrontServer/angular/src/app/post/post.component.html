@@ -18,10 +18,10 @@
         <td>{{post.url}}</td>
         <td>{{post.timeExecute}}</td>
         <td>{{post.body}}</td>
-        <td>{{post.status}}</td>
+        <td >{{PostStatus[post.status]}}</td>
 
         <td>
-            <button type="button" class="btn btn-warning" (click)="executePost(post.id)" [disabled]="!post.status">Execute</button>
+            <button type="button" class="btn btn-warning" (click)="executePost(post.id)" [disabled]="post.status">Execute</button>
         </td>
     </tr>
     </tbody>

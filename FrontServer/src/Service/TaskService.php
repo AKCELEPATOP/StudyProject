@@ -14,6 +14,7 @@ use App\Entity\Task;
 use App\Model\Post\ArrayOfPost;
 use App\Model\Post\UserPosts;
 use App\Repository\PostRepository;
+use App\Entity\User;
 use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -63,6 +64,7 @@ final class TaskService
     public function addTask(Post $task): Post
     {
         $this->taskRepository->save($task);
+        return $task;
     }
 
     /**
@@ -76,6 +78,7 @@ final class TaskService
         $this->getTask($id);
         $task->setId($id);
         $this->taskRepository->update($task);
+        return $task;
     }
 
     /**
@@ -89,33 +92,36 @@ final class TaskService
     }
 
     /**
-     * @param int $userId
+     * @param Post $userId
      * @return UserPosts
      */
-    public function getUserTasks(int $userId): UserPosts
+    public function getUserTasks(User $userId): UserPosts
     {
+        $result = $this->taskRepository->findBy(['user' => $userId], ['status' => 'ASC']);
+//        $result = $this->taskRepository->getUserPosts($userId);
+//        var_dump($result);
         $posts = new ArrayOfPost(
-            $this->taskRepository->findBy(['userId' => $userId], ['status' => 'ASC'])
+            $result
         );
-        list($average,$countRequests) = $this->getAverageSpeed($posts);
-        return new UserPosts($posts,$userId,count($posts),$countRequests,$average);
+        list($average, $countRequests) = $this->getAverageSpeed($posts);
+        return new UserPosts($posts, $userId->getId(), count($posts), $countRequests, $average);
     }
 
     /**
      * @param int $id
      * @param int $userId
      */
-    public function setToProcess(int $id, int $userId) : void
+    public function setToProcess(int $id, int $userId): void
     {
         $post = $this->taskRepository->find($id);
 
-        if($post->getUser()->getId() !== $userId){
+        if ($post->getUser()->getId() !== $userId) {
             throw new UnauthorizedHttpException("Контракт не принадлежит данному пользователю");
         }
-        if($post->getStatus() > Post::NEW){
+        if ($post->getStatus() > Post::STATUS_NEW) {
             throw new \DomainException("Контракт уже в выполнении");
         }
-        $post->setStatus(Post::WAITING);
+        $post->setStatus(Post::STATUS_WAITING);
         $this->taskRepository->update($post);
 
         //send to queue
@@ -125,16 +131,17 @@ final class TaskService
      * @param $posts
      * @return array
      */
-    private function getAverageSpeed($posts) : array
+    private function getAverageSpeed(ArrayOfPost $posts): array
     {
         $count = 0;
-        $sum = array_reduce($posts, function ($carry, Post $post) use ($count) {
-            if ($post->getStatus() === Post::COMPLETED) {
+        $sum = array_reduce($posts->getArrayCopy(), function ($carry, Post $post) use ($count) {
+            if ($post->getStatus() === Post::STATUS_COMPLETED) {
                 $carry += $post->getRequestDuration();
                 $count++;
             }
             return $carry;
         });
-        return [$sum/$count, $count];
+        $average = $count > 0 ? $sum / $count : 0;
+        return [$average, $count];
     }
 }

@@ -29,7 +29,8 @@ class PostRepository extends ServiceEntityRepository
 
     public function update(Post $task)
     {
-        $this->_em->merge($task);
+        $this->_em->persist($task);
+        $this->_em->flush();
     }
 
     public function delete(Post $task) : void
@@ -45,10 +46,21 @@ class PostRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder("e");
         $qb
             ->addSelect("e.id")
-            ->andWhere("e.time_execute < :now")
+            ->andWhere("e.timeExecute < :now")
             ->setParameter('now', $now)
             ->andWhere('e.status = :status')
-            ->setParameter('status', Post::WAITING);
+            ->setParameter('status', Post::STATUS_WAITING);
+        $result = $qb->getQuery()->getResult();
+        return $result;
+    }
+
+    public function getUserPosts(int $id)
+    {
+        $qb = $this->createQueryBuilder("e");
+        $qb
+            ->addSelect("*")
+            ->andWhere("e.user_id = :id")
+            ->setParameter('id', $id);
         $result = $qb->getQuery()->getResult();
         return $result;
     }

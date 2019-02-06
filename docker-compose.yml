@@ -1,79 +1,95 @@
 version: "3.1"
 services:
 
-    mysql:
-      image: mysql:8.0
-      container_name: symfony4-mysql
-      working_dir: /application
-      volumes:
-        - .:/application
-      environment:
-        - MYSQL_ROOT_PASSWORD=123
-        - MYSQL_DATABASE=symfony
-        - MYSQL_USER=user
-        - MYSQL_PASSWORD=123
-      ports:
-        - "8003:3306"
-      command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci','--default-authentication-plugin=mysql_native_password']
+  mysql:
+    image: mysql:8.0
+    container_name: symfony4-mysql
+    working_dir: /application
+    volumes:
+      - .:/application
+      - ./db/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=123
+      - MYSQL_DATABASE=symfony
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=123
+    ports:
+      - "8003:3306"
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci','--default-authentication-plugin=mysql_native_password']
 
-    webserver:
-      image: nginx:alpine
-      restart: always
-      container_name: symfony4-webserver
-      working_dir: /application
-      volumes:
-          - .:/application
-          - ./BackServer/docker/nginx:/etc/nginx/conf.d
-      depends_on:
-       - server1
-       - server2
-      ports:
-       - "80:80"
+  #  webserver:
+  #    image: nginx:alpine
+  #    container_name: symfony4-webserver
+  #    working_dir: /application
+  #    volumes:
+  #      - .:/application
+  #      - ./BackServer/docker/nginx:/etc/nginx/conf.d
+  #    depends_on:
+  #      - server1
+  #      - server2
+  #    ports:
+  #      - "80:80"
 
-    server1:
-      build: 
-        context: ./FrontServer
-        dockerfile: docker/php.docker
-      container_name: symfony4-php-fpm
-      working_dir: /application/FrontServer
-      volumes:
-        - .:/application
-        - ./FrontServer/docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
-      depends_on:
-        - rabbitmq
-        - mysql
-      ports:
-        - "8000:80"
+  nginx:
+    build:
+      context: .
+      dockerfile: BackServer/docker/nginx.docker
+    container_name: webserver
+    working_dir: /application
+    volumes:
+      - .:/application
+      - ./BackServer/docker/nginx:/etc/nginx/conf.d
+      - ./logs:/var/log/nginx
+    depends_on:
+      - server1
+      - server2
+    ports:
+      - "80:80"
 
-    server2:
-      build:
-        context: ./BackServer
-        dockerfile: docker/php.docker
-      container_name: yii-php-fpm
-      working_dir: /application/BackServer
-      volumes:
-        - .:/application
-        - ./BackServer/docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
-      depends_on:
-        - mysql
-      ports:
-        - "8004:80"
+  server1:
+    build:
+      context: ./FrontServer
+      dockerfile: docker/php.docker
+    container_name: symfony4-php-fpm
+    working_dir: /application/FrontServer
+    volumes:
+      - .:/application
+    #      - ./FrontServer/docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
+    depends_on:
+      - rabbitmq
+      - mysql
+    ports:
+      - "8000:80"
 
-    rabbitmq:
-      image: rabbitmq:3.7.5-management
-      # image: bitnami/rabbitmq:latest
-      working_dir: /application/FrontServer
-      # build:
-      #     context: ./Symfony
-      #     dockerfile: docker/rabbitMQ.docker
-      hostname: rabbit-mq
-      container_name: symfony4-rabbit-mq
-      volumes:
-        - .:/application
-      ports:
-        - '15672:15672'
-        - '5672:5672'
-      environment:
-        RABBITMQ_DEFAULT_USER: "rabbitmq"
-        RABBITMQ_DEFAULT_PASS: "rabbitmq"
-        RABBITMQ_DEFAULT_VHOST: "/"
+  server2:
+    build:
+      context: ./BackServer
+      dockerfile: docker/php.docker
+    container_name: yii-php-fpm
+    working_dir: /application/BackServer
+    volumes:
+      - .:/application
+      - ./BackServer/docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
+    depends_on:
+      - mysql
+    ports:
+      - "8004:80"
+
+  rabbitmq:
+    image: rabbitmq:3.7.5-management
+    # image: bitnami/rabbitmq:latest
+    working_dir: /application/FrontServer
+    # build:
+    #     context: ./Symfony
+    #     dockerfile: docker/rabbitMQ.docker
+    hostname: rabbit-mq
+    container_name: symfony4-rabbit-mq
+    volumes:
+      - .:/application
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"

@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {PostService} from "../post.service";
 import Post from '../Post';
+import {PostStatus} from "../PostStatus";
 
 @Component({
     selector: 'app-post',
@@ -11,6 +12,7 @@ export class PostComponent implements OnInit {
 
     public postList: Array<Post> = [];
     errorMessage: string;
+    PostStatus = PostStatus;
 
     constructor(private _postService: PostService) {
     }
@@ -21,7 +23,7 @@ export class PostComponent implements OnInit {
 
     getPosts() {
         this._postService.getPosts().subscribe(
-            posts => this.postList = posts, error => this.errorMessage = <any>error
+            posts => this.postList = posts.result.posts, error => this.errorMessage = <any>error
         );
     }
 
@@ -32,3 +34,4 @@ export class PostComponent implements OnInit {
         this.getPosts();
     }
 }
+

@@ -1,0 +1,2 @@
+*/10 * * * * php /application/FrontServer/bin/console app:send-posts
+*/10 * * * * php /application/FrontServer/bin/console app:execute-post

@@ -18,9 +18,9 @@ export class AddPostComponent implements OnInit {
     constructor(private _postService: PostService, private router: Router) {
     }
 
-    addPost(method, url, timeExecute, body) {
+    addPost() {
         let post: any;
-        post = {method,url,timeExecute,body};
+        post = {method: this.method,url: this.url,timeExecute: this.timeExecute,body: this.body};
         this._postService.addPost(post).subscribe((result =>{
             this.router.navigate(['/']);
         }), addError => this.errors = addError);

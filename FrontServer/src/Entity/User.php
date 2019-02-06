@@ -21,7 +21,7 @@ class User extends BaseUser
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
-     * @Groups(Post::GROUP)
+     * @Groups(Post::GROUP_POST)
      */
     protected $id;
 
@@ -30,7 +30,7 @@ class User extends BaseUser
      */
     private $posts;
 
-    /** @Groups(Post::GROUP) */
+    /** @Groups(Post::GROUP_POST) */
     protected $username;
 
 

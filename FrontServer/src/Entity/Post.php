@@ -5,55 +5,60 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\Expose;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
  */
 class Post
 {
-    const GROUP = "post_group";
+    const GROUP_POST = "post_group";
 
-    const SEND = "send";
+    const GROUP_SEND = "send";
 
-    const NEW = 0;
+    const STATUS_NEW = 0;
 
-    const WAITING = 1;
+    const STATUS_WAITING = 1;
 
-    const PROCESSED = 2;
+    const STATUS_PROCESSED = 2;
 
-    const ERROR = 3;
+    const STATUS_ERROR = 3;
 
-    const COMPLETED = 4;
+    const STATUS_COMPLETED = 4;
 
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({Post::GROUP, Post:SEND})
+     * @Groups({Post::GROUP_POST, Post::GROUP_SEND})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups(Post::GROUP)
+     * @Assert\Choice({"GET", "POST", "PUT", "DELETE"})
+     * @Groups(Post::GROUP_POST)
      */
     private $method;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups(Post::GROUP)
+     * @Groups(Post::GROUP_POST)
+     * @Assert\Url
      */
     private $url;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups(Post::GROUP)
+     * @Groups(Post::GROUP_POST)
+     * @Assert\DateTime
      */
     private $timeExecute;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups(Post::GROUP)
+     * @Groups(Post::GROUP_POST)
+     * @Assert\NotBlank
      */
     private $body;
 
@@ -61,13 +66,13 @@ class Post
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
      * @Expose(if="true")
-     * @Groups(Post::GROUP)
+     * @Groups(Post::GROUP_POST)
      */
     private $user;
 
     /**
      * @ORM\Column(type="smallint")
-     * @Groups(Post::GROUP)
+     * @Groups(Post::GROUP_POST)
      */
     private $status;
 
