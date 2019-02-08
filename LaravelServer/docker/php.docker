@@ -1,0 +1,36 @@
+FROM php:7.2-fpm
+WORKDIR "/application"
+
+# Fix debconf warnings upon build
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN ln -sf /usr/share/zoneinfo/Europe/Samara /etc/localtime
+
+# Install selected extensions and other stuff
+RUN apt-get update \
+    && apt-get -y install git \
+                          cron \
+                          libpng-dev \
+                          zlib1g-dev \
+    && docker-php-ext-install pdo pdo_mysql mbstring gd \
+    && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer \
+    && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
+
+# Setup cron
+
+COPY ./docker/cron/crontab /etc/cron.d/execute-post
+
+RUN chmod 0644 /etc/cron.d/execute-post \
+&& crontab /etc/cron.d/execute-post \
+$$ touch /var/log/cron.log
+
+# RUN service cron start
+
+COPY ./docker/startup/entrypoint.sh /
+
+RUN chmod 0644 /application
+
+RUN chmod +x /entrypoint.sh
+
+# Run the command on container startup
+CMD ["/entrypoint.sh"]

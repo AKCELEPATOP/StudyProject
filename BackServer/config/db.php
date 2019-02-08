@@ -2,10 +2,19 @@
 
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=localhost;dbname=yii2basic',
+    'dsn' => 'mysql:host=master;dbname=laravel',
     'username' => 'root',
-    'password' => '',
+    'password' => '123',
     'charset' => 'utf8',
+
+    'slaveConfig' => [
+        'username' => 'root',
+        'password' => '123',
+    ],
+
+    'slaves'=>[
+        'dsn' => 'mysql:host=slave;dbname=laravel'
+    ],
 
     // Schema cache options (for production environment)
     //'enableSchemaCache' => true,

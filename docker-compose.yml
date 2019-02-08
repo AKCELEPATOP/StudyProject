@@ -17,18 +17,41 @@ services:
       - "8003:3306"
     command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci','--default-authentication-plugin=mysql_native_password']
 
-  #  webserver:
-  #    image: nginx:alpine
-  #    container_name: symfony4-webserver
-  #    working_dir: /application
-  #    volumes:
-  #      - .:/application
-  #      - ./BackServer/docker/nginx:/etc/nginx/conf.d
-  #    depends_on:
-  #      - server1
-  #      - server2
-  #    ports:
-  #      - "80:80"
+  mysql-master:
+    image: bitnami/mysql:latest
+    ports:
+      - '9000:3306'
+    volumes:
+      - mysql_master_data:/bitnami
+      - ./MySql/data/mysql-master:/bitnami/mysql/data
+    environment:
+      - MYSQL_REPLICATION_MODE=master
+      - MYSQL_REPLICATION_USER=repl_user
+      #      - MYSQL_REPLICATION_PASSWORD=repl_password
+      - MYSQL_USER=my_user
+      - MYSQL_PASSWORD=123
+      - MYSQL_DATABASE=my_database
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+  mysql-slave:
+    image: bitnami/mysql:latest
+    ports:
+      - '3306'
+    depends_on:
+      - mysql-master
+    environment:
+      #      - MYSQL_ROOT_PASSWORD=123
+      - MYSQL_REPLICATION_MODE=slave
+      - MYSQL_REPLICATION_USER=repl_user
+      #      - MYSQL_REPLICATION_PASSWORD=repl_password
+      - MYSQL_USER=my_user
+      - MYSQL_PASSWORD=123
+      - MYSQL_DATABASE=my_database
+      - MYSQL_MASTER_HOST=mysql-master
+      - MYSQL_MASTER_PORT_NUMBER=3306
+      #      - MYSQL_MASTER_ROOT_PASSWORD=123
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
 
   nginx:
     build:
@@ -43,6 +66,7 @@ services:
     depends_on:
       - server1
       - server2
+      - server3
     ports:
       - "80:80"
 
@@ -71,9 +95,25 @@ services:
       - .:/application
       - ./BackServer/docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
     depends_on:
-      - mysql
+      - mysql-master
+      - mysql-slave
     ports:
       - "8004:80"
+
+  server3:
+    build:
+      context: ./LaravelServer
+      dockerfile: docker/php.docker
+    container_name: laravel-php-fpm
+    working_dir: /application/LaravelServer
+    volumes:
+      - .:/application
+    #      - ./FrontServer/docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
+    depends_on:
+      - mysql-master
+      - mysql-slave
+    ports:
+      - "8005:80"
 
   rabbitmq:
     image: rabbitmq:3.7.5-management
@@ -93,3 +133,7 @@ services:
       RABBITMQ_DEFAULT_USER: "rabbitmq"
       RABBITMQ_DEFAULT_PASS: "rabbitmq"
       RABBITMQ_DEFAULT_VHOST: "/"
+
+volumes:
+  mysql_master_data:
+    driver: local
