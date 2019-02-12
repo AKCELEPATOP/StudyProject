@@ -19,3 +19,16 @@ Route::get('/', function () {
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
 });
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
+
+Route::get('/url_home', 'HomeController@url')->name('url_home');
+
+Auth::routes();
+
+
+Route::resource('/task', 'TaskController');
+
+Route::resource('/url', 'UrlController');

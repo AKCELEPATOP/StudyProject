@@ -30,20 +30,20 @@ class Post
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({Post::GROUP_POST, Post::GROUP_SEND})
+     * @Groups({Post::GROUP_POST})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\Choice({"GET", "POST", "PUT", "DELETE"})
-     * @Groups(Post::GROUP_POST)
+     * @Groups({Post::GROUP_POST, Post::GROUP_SEND})
      */
     private $method;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups(Post::GROUP_POST)
+     * @Groups({Post::GROUP_POST, Post::GROUP_SEND})
      * @Assert\Url
      */
     private $url;
@@ -57,7 +57,7 @@ class Post
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups(Post::GROUP_POST)
+     * @Groups({Post::GROUP_POST, Post::GROUP_SEND})
      * @Assert\NotBlank
      */
     private $body;
@@ -80,6 +80,11 @@ class Post
      * @ORM\Column(type="float", nullable=true)
      */
     private $requestDuration;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $count;
 
     public function getId(): ?int
     {
@@ -166,6 +171,16 @@ class Post
     public function setRequestDuration(?float $requestDuration): self
     {
         $this->requestDuration = $requestDuration;
+    }
+
+    public function getCount(): ?int
+    {
+        return $this->count;
+    }
+
+    public function setCount(int $count): self
+    {
+        $this->count = $count;
 
         return $this;
     }

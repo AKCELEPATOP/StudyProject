@@ -8,6 +8,7 @@
 
 namespace App\Command;
 
+use App\Entity\Post;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -19,8 +20,17 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class ExecutePost extends Command
 {
-    /** @var string  */
+    /** @var string */
     protected static $defaultName = 'app:execute-post';
+
+    /** @var PostRepository  */
+    protected $postRepository;
+
+    public function __construct(PostRepository $postRepository, ?string $name = null)
+    {
+        parent::__construct($name);
+        $this->postRepository = $postRepository;
+    }
 
     protected function configure()
     {
@@ -38,30 +48,45 @@ class ExecutePost extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $connection = new AMQPStreamConnection('rabbitmq', 5672,
-            '%env(string:RABBITMQ_USER_NAME)%',
-            '%env(string:RABBITMQ_PASSWORD)%');
+            'rabbitmq',
+            'rabbitmq');
         $channel = $connection->channel();
 
-        $channel->queue_declare('posts', false,false,false,false);
+        $channel->queue_declare('posts', false, false, false, false);
 
-        $callback = function ($msg){
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'back.test');
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POST,           1 );
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $msg->body);
+        $callback = function ($msg) {
+            $message = json_decode($msg->body);
+            try {
+                $ch = curl_init($message->{'0'}->{'url'});
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-            $response = curl_exec($ch);
-
-//            $data = json_decode($response);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $message->{'0'}->{'method'});
+                if(($message->{'0'}->{'method'}) === "POST" || ($message->{'0'}->{'method'}) === "PUT"){
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $message->{'0'}->{'body'});
+                    curl_setopt($ch, CURLOPT_HTTPHEADER,
+                        array(  'Content-type: application/json',
+                                'Content-Length: ' . strlen($message->{'0'}->{'body'}
+                                )));
+                }
+                curl_exec($ch);
+                $this->postRepository->setState($message->{'id'}, Post::STATUS_COMPLETED);
+            }catch (\Exception $e){
+                $this->postRepository->setState($message->{'id'}, Post::STATUS_ERROR);
+            }
         };
 
         $channel->basic_consume('posts', '',
-            false,true,false,false,
+            false, true, false, false,
             $callback);
 
-        while (count($channel->callbacks)){
+        $shutdown = function ($channel, $connection) {
+            $channel->close();
+            $connection->close();
+        };
+
+        register_shutdown_function($shutdown, $channel, $connection);
+
+        while (count($channel->callbacks)) {
             $channel->wait();
         }
 

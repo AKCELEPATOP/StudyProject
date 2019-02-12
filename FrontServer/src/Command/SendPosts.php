@@ -50,11 +50,6 @@ class SendPosts extends Command
     {
         $this->setDescription('Send posts to queue')
             ->setHelp('This command allows you to send posts')
-//            ->addArgument('postId', InputArgument::REQUIRED, 'Post id')
-//            ->addArgument('method', InputArgument::REQUIRED, 'Method')
-//            ->addArgument('url', InputArgument::REQUIRED, 'Url post')
-//            ->addArgument('body', InputArgument::OPTIONAL, 'Request body')
-//            ->addArgument('time', InputArgument::REQUIRED, 'Time of execution')
         ;
     }
 
@@ -67,15 +62,20 @@ class SendPosts extends Command
     {
         $posts = $this->postRepository->getReadyPosts();
         $connection = new AMQPStreamConnection('rabbitmq', 5672,
-            '%env(string:RABBITMQ_USER_NAME)%',
-            '%env(string:RABBITMQ_PASSWORD)%');
+            'rabbitmq',
+            'rabbitmq');
         $channel = $connection->channel();
 
         $channel->queue_declare('posts', false,false,false,false);
 
         foreach ($posts as $post){
-            $msg = new AMQPMessage($this->serializer->serialize($post,'json',['groups' => Post::GROUP_SEND]));
-            $channel->basic_publish($msg,'','posts');
+            try{
+                $msg = new AMQPMessage($this->serializer->serialize($post,'json',['groups' => 'send']));
+                $channel->basic_publish($msg,'','posts');
+                $this->postRepository->setState($post['id'],Post::STATUS_PROCESSED);
+            }catch (\Exception $ex){
+                $this->postRepository->setState($post['id'],Post::STATUS_ERROR);
+            }
         }
 
         $channel->close();

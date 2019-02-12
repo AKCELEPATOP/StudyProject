@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Sasha
- * Date: 06.02.2019
- * Time: 10:57
- */
 
 namespace app\commands;
 
@@ -13,6 +7,7 @@ use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
 use yii\db\Exception;
+use yii\db\Query;
 
 class ParseController extends Controller
 {
@@ -56,13 +51,27 @@ class ParseController extends Controller
     private function parseString(string $line)
     {
         if (preg_match(self::regex, $line, $matches)) {
-            Yii::$app->db
-                ->createCommand("INSERT INTO post (`url`, `method`,`body`) VALUES (:url,:method,:body)", [
-                    'url' => $matches[2],
-                    'method' => $matches[3],
-                    'body' => $matches[4]
-                ])
+            if (!$this->isAllowed($matches[1])) {
+                return;
+            }
+            @Yii::$app->db
+                ->createCommand()
+                ->insert('tasks', array(
+                    'route' => $matches[1],
+                    'method' => $matches[2],
+                    'body' => $matches[3]
+                ))
                 ->execute();
         }
+    }
+
+    private function isAllowed(string $path)
+    {
+        $row = (new Query())
+            ->select(['id', 'path'])
+            ->from('urls')
+            ->where(['path' => $path])
+            ->one();
+        return !!$row;
     }
 }

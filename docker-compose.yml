@@ -16,6 +16,8 @@ services:
     ports:
       - "8003:3306"
     command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci','--default-authentication-plugin=mysql_native_password']
+    networks:
+      - mynet
 
   mysql-master:
     image: bitnami/mysql:latest
@@ -33,6 +35,9 @@ services:
       - MYSQL_DATABASE=my_database
       # ALLOW_EMPTY_PASSWORD is recommended only for development.
       - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - mynet
+
   mysql-slave:
     image: bitnami/mysql:latest
     ports:
@@ -52,6 +57,8 @@ services:
       #      - MYSQL_MASTER_ROOT_PASSWORD=123
       # ALLOW_EMPTY_PASSWORD is recommended only for development.
       - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - mynet
 
   nginx:
     build:
@@ -63,12 +70,17 @@ services:
       - .:/application
       - ./BackServer/docker/nginx:/etc/nginx/conf.d
       - ./logs:/var/log/nginx
+      - ./BackServer/docker/request:/nginx/request
     depends_on:
       - server1
       - server2
       - server3
     ports:
       - "80:80"
+    networks:
+      mynet:
+        aliases:
+          - back.test
 
   server1:
     build:
@@ -84,6 +96,8 @@ services:
       - mysql
     ports:
       - "8000:80"
+    networks:
+      - mynet
 
   server2:
     build:
@@ -99,6 +113,8 @@ services:
       - mysql-slave
     ports:
       - "8004:80"
+    networks:
+      - mynet
 
   server3:
     build:
@@ -114,6 +130,8 @@ services:
       - mysql-slave
     ports:
       - "8005:80"
+    networks:
+      - mynet
 
   rabbitmq:
     image: rabbitmq:3.7.5-management
@@ -126,14 +144,22 @@ services:
     container_name: symfony4-rabbit-mq
     volumes:
       - .:/application
+      - ./FrontServer/docker/enabled_plugins:/etc/rabbitmq/enabled_plugins
     ports:
       - '15672:15672'
       - '5672:5672'
     environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
       RABBITMQ_DEFAULT_USER: "rabbitmq"
       RABBITMQ_DEFAULT_PASS: "rabbitmq"
       RABBITMQ_DEFAULT_VHOST: "/"
+    networks:
+      - mynet
 
 volumes:
   mysql_master_data:
     driver: local
+
+networks:
+  mynet:
+    driver: bridge

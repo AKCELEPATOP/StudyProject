@@ -1,2 +1,2 @@
-*/10 * * * * php /application/FrontServer/bin/console app:send-posts
-*/10 * * * * php /application/FrontServer/bin/console app:execute-post
+* * * * * php /application/FrontServer/bin/console app:send-posts >> /var/log/cron.log 2>&1
+* * * * * php /application/FrontServer/bin/console app:execute-post >> /var/log/cron.log 2>&1

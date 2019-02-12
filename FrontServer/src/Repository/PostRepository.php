@@ -65,6 +65,13 @@ class PostRepository extends ServiceEntityRepository
         return $result;
     }
 
+    public function setState(int $id, int $status)
+    {
+        $post = $this->find($id);
+        $post->setStatus($status);
+        $this->update($post);
+    }
+
     // /**
     //  * @return Post[] Returns an array of Post objects
     //  */
