@@ -39,7 +39,7 @@ class DateTimeDenormailzer implements DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        return \DateTime::createFromFormat("Y-m-d H:i:s", $data);
+        return \DateTime::createFromFormat("Y-m-d\TH:i", $data);
     }
 
     /**

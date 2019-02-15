@@ -1817,11 +1817,48 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Task",
   data: function data() {
-    return {};
+    return {
+      tasks: [],
+      stats: [],
+      total: 0
+    };
   },
   mounted: function mounted() {
     this.readTasks();
@@ -1833,6 +1870,8 @@ __webpack_require__.r(__webpack_exports__);
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://laravel.test/task').then(function (response) {
         console.log(response.data);
         _this.tasks = response.data.tasks;
+        _this.stats = response.data.stats;
+        _this.total = response.data.total;
       });
     }
   }
@@ -19898,8 +19937,8 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
     _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-md-12" }, [
-        _c("div", { staticClass: "panel panel-default" }, [
+      _c("div", { staticClass: "col-md-6" }, [
+        _c("div", { staticClass: "panel panel-" }, [
           _vm._m(0),
           _vm._v(" "),
           _c("div", { staticClass: "panel-body" }, [
@@ -19948,6 +19987,62 @@ var render = function() {
                               _vm._v(
                                 "\n                                " +
                                   _vm._s(task.created_at) +
+                                  "\n                            "
+                              )
+                            ])
+                          ])
+                        })
+                      ],
+                      2
+                    )
+                  ]
+                )
+              : _vm._e()
+          ])
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-6" }, [
+        _c("div", { staticClass: "panel panel-default" }, [
+          _c("div", { staticClass: "panel-heading" }, [
+            _c("h3", [
+              _c("span", { staticClass: "glyphicon glyphicon-dashboard" }),
+              _vm._v(" Всего запросов: " + _vm._s(_vm.total) + " ")
+            ]),
+            _vm._v(" "),
+            _c("br")
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "panel-body" }, [
+            _vm.stats.length > 0
+              ? _c(
+                  "table",
+                  {
+                    staticClass:
+                      "table table-bordered table-striped table-responsive"
+                  },
+                  [
+                    _c(
+                      "tbody",
+                      [
+                        _vm._m(2),
+                        _vm._v(" "),
+                        _vm._l(_vm.stats, function(stat, index) {
+                          return _c("tr", [
+                            _c("td", [_vm._v(_vm._s(index + 1))]),
+                            _vm._v(" "),
+                            _c("td", [
+                              _vm._v(
+                                "\n                                " +
+                                  _vm._s(stat.method) +
+                                  "\n                            "
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c("td", [
+                              _vm._v(
+                                "\n                                " +
+                                  _vm._s(stat.total) +
                                   "\n                            "
                               )
                             ])
@@ -20011,6 +20106,30 @@ var staticRenderFns = [
       _c("th", [
         _vm._v(
           "\n                                Date\n                            "
+        )
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", [
+      _c("th", [
+        _vm._v(
+          "\n                                No.\n                            "
+        )
+      ]),
+      _vm._v(" "),
+      _c("th", [
+        _vm._v(
+          "\n                                Method\n                            "
+        )
+      ]),
+      _vm._v(" "),
+      _c("th", [
+        _vm._v(
+          "\n                                Count\n                            "
         )
       ])
     ])

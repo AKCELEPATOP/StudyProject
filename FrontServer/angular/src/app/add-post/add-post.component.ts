@@ -9,19 +9,23 @@ import {Router} from "@angular/router";
 })
 export class AddPostComponent implements OnInit {
 
-    method: string ;
+    method: string;
     url: string;
     timeExecute: Date;
     body: string;
-    errors= [];
+    count: number;
+    errors = [];
 
     constructor(private _postService: PostService, private router: Router) {
     }
 
     addPost() {
         let post: any;
-        post = {method: this.method,url: this.url,timeExecute: this.timeExecute,body: this.body};
-        this._postService.addPost(post).subscribe((result =>{
+        post = {
+            method: this.method, url: this.url, timeExecute: this.timeExecute,
+            body: this.body, count: this.count
+        };
+        this._postService.addPost(post).subscribe((result => {
             this.router.navigate(['/']);
         }), addError => this.errors = addError);
     }

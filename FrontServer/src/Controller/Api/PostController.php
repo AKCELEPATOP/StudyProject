@@ -55,36 +55,6 @@ class PostController extends AbstractFOSRestController
         $this->validate = $validate;
     }
 
-//    /**
-//     * @Rest\Get("/api/post/{id}")
-//     * @param int $id
-//     * @return JsonResponse
-//     */
-//    public function show(int $id)
-//    {
-//        try {
-//            $task = $this->service->getTask($id);
-//        } catch (EntityNotFoundException $ex) {
-//            $response = array(
-//                'code' => 1,
-//                'message' => 'post not found',
-//                'error' => null,
-//                'result' => null
-//            );
-//            return new JsonResponse($response, Response::HTTP_NOT_FOUND);
-//        }
-//
-//        $data = $this->get('serializer')->serialize($task, 'json');
-//
-//        $response = array(
-//            'code' => 0,
-//            'message' => 'success',
-//            'errors' => null,
-//            'result' => json_decode($data)
-//        );
-//        return new JsonResponse($response, 200);
-//    }
-
     /**
      * @Rest\Post("/api/post")
      */
@@ -92,7 +62,6 @@ class PostController extends AbstractFOSRestController
     {
         $data = $request->getContent();
         $post = $this->get('serializer')->deserialize($data, 'App\Entity\Post', 'json');
-
         $errors = $this->validate->validate($post);
         if (count($errors) > 0) {
             return new JsonResponse($errors, Response::HTTP_BAD_REQUEST);
@@ -131,8 +100,6 @@ class PostController extends AbstractFOSRestController
             );
             return new JsonResponse($response, Response::HTTP_NOT_FOUND);
         }
-
-//        $serializer = new Serializer([new DateTimeNormalizer(),$this->normalizer], array('json' => new JsonEncoder()));
 
         $data = $this->serializer->serialize($posts, 'json', ['groups' => Post::GROUP_POST]);
         $response = array(
@@ -204,8 +171,7 @@ class PostController extends AbstractFOSRestController
      */
     public function getUserPosts()
     {
-//        $userId = $this->getUserId();
-        $userId = 1;
+        $userId = $this->getUserId();
         try {
             $result = $this->service->getUserTasks($this->userRepository->find($userId));
             $result = $this->serializer->serialize($result, 'json', ['groups' => Post::GROUP_POST]);
@@ -228,7 +194,7 @@ class PostController extends AbstractFOSRestController
      */
     public function setToProcess($id)
     {
-        $userId = 1; //$this->getUserId();
+        $userId = $this->getUserId();
         try {
             $this->service->setToProcess($id, $userId);
             $response = array(

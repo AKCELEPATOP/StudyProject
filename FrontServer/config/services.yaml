@@ -5,6 +5,11 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
   locale: 'en'
+  rabbit.host: '%env(RABBITMQ_HOST)%'
+  rabbit.port: '%env(RABBITMQ_PORT)%'
+  rabbit.login: '%env(RABBITMQ_USER_NAME)%'
+  rabbit.password: '%env(RABBITMQ_PASSWORD)%'
+
 
 services:
   # default configuration for services in *this* file
@@ -43,27 +48,3 @@ services:
     arguments: []
     tags:
       - { name: kernel.event_subscriber }
-
-  #    validate_service:
-  #        class: App\Service\Validate
-  #        arguments: [~]
-  #        public: true
-  #
-  #    App\Controller\Api\PostController:
-  #        arguments: [~, ~, ~, ~, '@validate_service']
-
-
-#  datetime_normalizer:
-#    class: App\Normalizer\DateTimeNormalizer
-#    tags:
-#      - { name: serializer.normalizer }
-#  datetime_denormalizer:
-#    class: App\Normalizer\DateTimeDenormailzer
-#    tags:
-#      - { name: serializer.normalizer }
-
-#  datetime_normalizer:
-#    class: Symfony\Component\Serializer\Normalizer\DateTimeNormalizer
-#    public: false
-#    tags:
-#      - { name: serializer.normalizer }

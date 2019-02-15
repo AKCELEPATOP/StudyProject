@@ -8,8 +8,11 @@
 
 namespace App\Command;
 
+use App\Command\Base\BaseCommand;
 use App\Entity\Post;
 use App\Repository\PostRepository;
+use App\Service\HttpService;
+use App\Service\RabbitService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,25 +21,35 @@ use Symfony\Component\Console\Output\OutputInterface;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
-class ExecutePost extends Command
+class ExecutePost extends BaseCommand
 {
     /** @var string */
     protected static $defaultName = 'app:execute-post';
 
-    /** @var PostRepository  */
+    /** @var PostRepository */
     protected $postRepository;
 
-    public function __construct(PostRepository $postRepository, ?string $name = null)
+    /** @var RabbitService */
+    protected $rabbitService;
+
+    /** @var HttpService */
+    protected $httpService;
+
+    public function __construct(PostRepository $postRepository,
+                                RabbitService $rabbitService,
+                                HttpService $httpService,
+                                ?string $name = null)
     {
         parent::__construct($name);
         $this->postRepository = $postRepository;
+        $this->rabbitService = $rabbitService;
+        $this->httpService = $httpService;
     }
 
     protected function configure()
     {
         $this->setDescription('Execute post')
             ->setHelp('This command execute post from queue');
-
     }
 
     /**
@@ -47,50 +60,20 @@ class ExecutePost extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $connection = new AMQPStreamConnection('rabbitmq', 5672,
-            'rabbitmq',
-            'rabbitmq');
-        $channel = $connection->channel();
-
-        $channel->queue_declare('posts', false, false, false, false);
-
-        $callback = function ($msg) {
+        $callback = function ($msg) use ($output) {
             $message = json_decode($msg->body);
             try {
-                $ch = curl_init($message->{'0'}->{'url'});
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $message->{'0'}->{'method'});
-                if(($message->{'0'}->{'method'}) === "POST" || ($message->{'0'}->{'method'}) === "PUT"){
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $message->{'0'}->{'body'});
-                    curl_setopt($ch, CURLOPT_HTTPHEADER,
-                        array(  'Content-type: application/json',
-                                'Content-Length: ' . strlen($message->{'0'}->{'body'}
-                                )));
-                }
-                curl_exec($ch);
+                $console_message = $this->httpService->sendGuzzleRequest($message->{'0'}->{'url'},
+                    $message->{'0'}->{'method'},
+                    $message->{'0'}->{'body'});
                 $this->postRepository->setState($message->{'id'}, Post::STATUS_COMPLETED);
-            }catch (\Exception $e){
+                $this->info($output, $console_message);
+            } catch (\Exception $e) {
                 $this->postRepository->setState($message->{'id'}, Post::STATUS_ERROR);
+                $this->error($output,'Error: ' . $e->getMessage());
             }
         };
 
-        $channel->basic_consume('posts', '',
-            false, true, false, false,
-            $callback);
-
-        $shutdown = function ($channel, $connection) {
-            $channel->close();
-            $connection->close();
-        };
-
-        register_shutdown_function($shutdown, $channel, $connection);
-
-        while (count($channel->callbacks)) {
-            $channel->wait();
-        }
-
-        $channel->close();
-        $connection->close();
+        $this->rabbitService->getMessages($callback);
     }
 }

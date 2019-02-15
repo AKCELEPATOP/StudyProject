@@ -56,9 +56,8 @@ class Post
     private $timeExecute;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({Post::GROUP_POST, Post::GROUP_SEND})
-     * @Assert\NotBlank
      */
     private $body;
 
@@ -83,6 +82,7 @@ class Post
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({Post::GROUP_POST, Post::GROUP_SEND})
      */
     private $count;
 

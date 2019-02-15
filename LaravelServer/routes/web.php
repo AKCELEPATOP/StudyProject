@@ -26,9 +26,9 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 Route::get('/url_home', 'HomeController@url')->name('url_home');
 
-Auth::routes();
 
+Route::resource('/task', 'TaskController',
+    ['only' => ['index']]);
 
-Route::resource('/task', 'TaskController');
-
-Route::resource('/url', 'UrlController');
+Route::resource('/url', 'UrlController',
+    ['except' => ['create', 'show', 'edit']]);
